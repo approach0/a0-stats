@@ -11,8 +11,8 @@ app.use(bodyParser.json())
 /* disable etag (hash) and cache-control policy */
 app.disable('etag')
 app.use((req, res, next) => {
-	res.set('Cache-Control', 'no-cache')
-	next()
+  res.set('Cache-Control', 'no-cache')
+  next()
 })
 
 /* connect to database */
@@ -126,11 +126,10 @@ async function DB_update_ip_info(query) {
 
 /* httpd routers */
 app.get('/', function (req, res) {
-	res.send('This is statsd!')
+  res.send('This is statsd!')
 
 }).post('/push/query', async (req, res) => {
-	const query = req.body
-
+  const query = req.body
   DB_update_ip_info(query)
   DB_insert_query(query)
   res.json({'res': 'succussful'})
@@ -167,12 +166,21 @@ app.get('/', function (req, res) {
 	})
 	res.json({'res': arr})
 
-}).get('/pull/query-summary/:from.:to', (req, res) => {
-	const arr = qrylog.pull_query_summary(db, {
-		begin: req.params.from,
-		end: req.params.to
-	})
-	res.json({'res': arr})
+}).get('/pull/query-summary/:from.:to', async (req, res) => {
+  try {
+    const from = req.params.from
+    const to = req.params.to
+    const ret = await knex.schema.raw(
+      `SELECT COUNT(*) as n_queries, COUNT(DISTINCT IP) as n_uniq_ip FROM query
+      WHERE time >= ?::date AND time < (?::date + '1 day'::interval)`,
+      [from, to]
+    )
+
+    res.json({'res': ret.rows})
+
+  } catch (err) {
+    res.json({'res': [], 'error': err.toString()})
+  }
 
 }).get('/pull/query-trend/:from.:to', (req, res) => {
 	const arr = qrylog.pull_query_trend(db, {
