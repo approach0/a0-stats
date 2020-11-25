@@ -70,7 +70,7 @@ async function migrate_ip_info(limit) {
 async function migrate_keyword(limit) {
   await db_knex.schema.dropTableIfExists('keyword')
   await db_knex.schema.createTable('keyword', function(table) {
-    table.string('str').notNullable()
+    table.string('str', 511).notNullable()
     table.string('type').notNullable()
     table.string('op')
     table.integer('qryID').notNullable()
@@ -82,12 +82,16 @@ async function migrate_keyword(limit) {
 
   for (const row of statm.iterate()) {
     console.log(row)
-    await db_knex('keyword').insert({
-      str: row.str,
-      type: row.type,
-      op: null,
-      qryID: row.qryID
-    })
+    try {
+      await db_knex('keyword').insert({
+        str: row.str,
+        type: row.type,
+        op: null,
+        qryID: row.qryID
+      })
+    } catch (err) {
+      console.error(err.toString())
+    }
   }
 }
 
