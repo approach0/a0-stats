@@ -1,0 +1,12 @@
+{
+  "name": "a0-stats",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "knex": "^0.21.6",
+    "pg": "^8.4.1"
+  }
+}
