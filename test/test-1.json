@@ -1,1 +1,1 @@
-{"ip":"121.32.198.208","page":1,"kw":[{"type":"term","str":"cone"},{"type":"tex","str":"z=\\sqrt{x^2+y^2}"},{"type":"term","str":"plane"},{"type":"tex","str":"z=1+y"}]}
+{"ip":"121.32.198.208","page":1,"kw":[{"type":"word","str":"cone"},{"type":"tex","str":"z=\\sqrt{x^2+y^2}"},{"type":"word","str":"plane"},{"type":"tex","str":"z=1+y"}], "geo": {"city": "Kunming", "region": "Yunnan", "country": "China"} }
