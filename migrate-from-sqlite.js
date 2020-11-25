@@ -89,7 +89,7 @@ async function migrate_keyword(limit) {
     try {
       await db_knex('keyword').insert({
         str: row.str,
-        type: row.type,
+        type: (row.type === 'tex') ? 'tex' : 'word',
         op: null,
         qryID: row.qryID
       })
