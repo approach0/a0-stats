@@ -27,12 +27,16 @@ async function migrate_query(limit) {
 
   for (const row of stmt.iterate()) {
     console.log(row)
-    await db_knex('query').insert({
-      time: row.time,
-      ip: row.ip || '0.0.0.0',
-      page: row.page,
-      id: row.id
-    })
+    try {
+      await db_knex('query').insert({
+        time: row.time,
+        ip: row.ip || '0.0.0.0',
+        page: row.page,
+        id: row.id
+      })
+    } catch (err) {
+      console.error(err.toString())
+    }
   }
 }
 
