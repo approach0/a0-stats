@@ -42,6 +42,7 @@ async function migrate_query(limit) {
 async function migrate_ip_info(limit) {
   await db_knex.schema.dropTableIfExists('ip_info')
   await db_knex.schema.createTable('ip_info', function(table) {
+    table.string('city').notNullable()
     table.string('region').notNullable()
     table.string('country').notNullable()
     table.string('ip').notNullable()
@@ -52,17 +53,21 @@ async function migrate_ip_info(limit) {
   const stmt = db_sqlite.prepare('SELECT * from ip_info ' +  limit_clause)
 
   for (const row of stmt.iterate()) {
-    //console.log(row)
-    const region = row.city + ', ' + row.region
+    const city = row.city
+    const region = row.region
+    const country = row.country
     const insert_stmt = db_knex('ip_info').insert({
+      city: city,
       region: region,
-      country: row.country,
+      country: country,
       ip: row.ip || '0.0.0.0'
     }).toString()
 
+    const escape_city = city.replaceAll("'", "''")
     const escape_region = region.replaceAll("'", "''")
-    await db_knex.raw(`${insert_stmt} ON CONFLICT (ip)
-      DO UPDATE SET region='${escape_region}', country='${escape_region}';`)
+    const escape_country = country.replaceAll("'", "''")
+    await db_knex.raw(`${insert_stmt} ON CONFLICT (ip) DO UPDATE SET
+      city='${escape_city}', region='${escape_region}', country='${escape_region}';`)
   }
 }
 
