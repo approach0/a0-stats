@@ -18,21 +18,20 @@ async function migrate_query(limit) {
     table.datetime('time').notNullable()
     table.string('ip').notNullable()
     table.integer('page').notNullable()
-    table.integer('id').primary().notNullable()
+    table.increments('id').primary()
     table.index('ip')
   })
 
-  const limit_clause = (limit < 0) ? '' : ` limit ${limit || 10}`
+  const limit_clause = (limit < 0) ? '' : ` limit ${limit || 0}`
   const stmt = db_sqlite.prepare('SELECT * from query ' +  limit_clause)
 
   for (const row of stmt.iterate()) {
-    console.log(row)
+    //console.log(row)
     try {
       await db_knex('query').insert({
         time: row.time,
         ip: row.ip || '0.0.0.0',
-        page: row.page,
-        id: row.id
+        page: row.page
       })
     } catch (err) {
       console.error(err.toString())
@@ -49,11 +48,11 @@ async function migrate_ip_info(limit) {
     table.primary('ip')
   })
 
-  const limit_clause = (limit < 0) ? '' : ` limit ${limit || 10}`
+  const limit_clause = (limit < 0) ? '' : ` limit ${limit || 0}`
   const stmt = db_sqlite.prepare('SELECT * from ip_info ' +  limit_clause)
 
   for (const row of stmt.iterate()) {
-    console.log(row)
+    //console.log(row)
     const region = row.city + ', ' + row.region
     const insert_stmt = db_knex('ip_info').insert({
       region: region,
@@ -77,11 +76,11 @@ async function migrate_keyword(limit) {
     table.index('qryID')
   })
 
-  const limit_clause = (limit < 0) ? '' : ` limit ${limit || 10}`
+  const limit_clause = (limit < 0) ? '' : ` limit ${limit || 0}`
   let statm = db_sqlite.prepare('SELECT * from keyword ' +  limit_clause)
 
   for (const row of statm.iterate()) {
-    console.log(row)
+    //console.log(row)
     try {
       await db_knex('keyword').insert({
         str: row.str,
@@ -96,8 +95,11 @@ async function migrate_keyword(limit) {
 }
 
 ;(async function() {
+  console.log('migrate_ip_info')
   await migrate_ip_info(-1)
+  console.log('migrate_query')
   await migrate_query(-1)
+  console.log('migrate_keyword')
   await migrate_keyword(-1)
 
   db_sqlite.close()

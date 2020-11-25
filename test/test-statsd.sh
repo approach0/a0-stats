@@ -1,10 +1,10 @@
 #!/bin/sh
 range="0000-01-01.9999-12-31"
 
-## Insertions
-# curl -v -H "Content-Type: application/json" -d @"test-1.json" "http://localhost:3207/push/query"
-# curl -v -H "Content-Type: application/json" -d @"test-2.json" "http://localhost:3207/push/query"
-# curl -v -H "Content-Type: application/json" -d @"test-3.json" "http://localhost:3207/push/query"
+# Insertions
+curl -v -H "Content-Type: application/json" -d @"test-1.json" "http://localhost:3207/push/query"
+curl -v -H "Content-Type: application/json" -d @"test-2.json" "http://localhost:3207/push/query"
+curl -v -H "Content-Type: application/json" -d @"test-3.json" "http://localhost:3207/push/query"
 
 ## Query summary
 # curl -v -H "Content-Type: application/json" "http://localhost:3207/pull/query-summary/$range"
