@@ -1,5 +1,5 @@
 #!/bin/sh
-range="2019-06-14.2019-06-15"
+range="2019-06-14.2019-12-15"
 
 ## Insertions
 #curl -v -H "Content-Type: application/json" -d @"test-1.json" "http://localhost:3207/push/query"
@@ -8,11 +8,11 @@ range="2019-06-14.2019-06-15"
 
 ## Query summary and trend
 #curl -v -H "Content-Type: application/json" "http://localhost:3207/pull/query-summary/$range"
-curl -v -H "Content-Type: application/json" "http://localhost:3207/pull/query-trend/$range"
+#curl -v -H "Content-Type: application/json" "http://localhost:3207/pull/query-trend/$range"
 
 ## Query IPs
-# curl -v -H "Content-Type: application/json" "http://localhost:3207/pull/query-IPs/30/$range"
-# curl -v -H "Content-Type: application/json" "http://localhost:3207/pull/query-IPs/from-121.32.198.208/30/$range"
+#curl -v -H "Content-Type: application/json" "http://localhost:3207/pull/query-IPs/30/$range"
+curl -v -H "Content-Type: application/json" "http://localhost:3207/pull/query-IPs/from-129.21.34.106/30/$range"
 
 # curl -v -H "Content-Type: application/json" "http://localhost:3207/pull/query-items/30/$range"
 # curl -v -H "Content-Type: application/json" "http://localhost:3207/pull/query-items/from-121.32.198.208/30/$range"

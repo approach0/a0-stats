@@ -101,11 +101,11 @@ async function migrate_keyword(limit) {
 
 ;(async function() {
   console.log('migrate_ip_info')
-  await migrate_ip_info(1000)
+  await migrate_ip_info(-1)
   console.log('migrate_query')
-  await migrate_query(1000)
+  await migrate_query(-1)
   console.log('migrate_keyword')
-  await migrate_keyword(1000)
+  await migrate_keyword(-1)
 
   db_sqlite.close()
   process.exit()

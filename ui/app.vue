@@ -325,8 +325,8 @@ export default {
   data: function () {
     return {
       form_valid: false,
-      last_index_update: '2019-06-03T19:16:00',
-      from: '2019-06-01',
+      last_index_update: '2020-11-25T19:16:00',
+      from: '2020-11-24',
       to: new Date().toISOString().substr(0, 10),
       max: 30,
       url_ip: this.uri_IP(),
