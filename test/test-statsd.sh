@@ -1,13 +1,14 @@
 #!/bin/sh
 range="2019-06-14.2019-06-15"
 
-# Insertions
+## Insertions
 #curl -v -H "Content-Type: application/json" -d @"test-1.json" "http://localhost:3207/push/query"
 #curl -v -H "Content-Type: application/json" -d @"test-2.json" "http://localhost:3207/push/query"
 #curl -v -H "Content-Type: application/json" -d @"test-3.json" "http://localhost:3207/push/query"
 
-## Query summary
-curl -v -H "Content-Type: application/json" "http://localhost:3207/pull/query-summary/$range"
+## Query summary and trend
+#curl -v -H "Content-Type: application/json" "http://localhost:3207/pull/query-summary/$range"
+curl -v -H "Content-Type: application/json" "http://localhost:3207/pull/query-trend/$range"
 
 ## Query IPs
 # curl -v -H "Content-Type: application/json" "http://localhost:3207/pull/query-IPs/30/$range"

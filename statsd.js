@@ -182,11 +182,21 @@ app.get('/', function (req, res) {
     res.json({'res': [], 'error': err.toString()})
   }
 
-}).get('/pull/query-trend/:from.:to', (req, res) => {
-	const arr = qrylog.pull_query_trend(db, {
-		begin: req.params.from,
-		end: req.params.to
-	})
-	res.json({'res': arr})
+}).get('/pull/query-trend/:from.:to', async (req, res) => {
+  try {
+    const from = req.params.from
+    const to = req.params.to
+    const ret = await knex.schema.raw(
+      `SELECT COUNT(DISTINCT ip) as n_uniq_ip, date(time) as date FROM query
+      WHERE time >= ?::date AND time < (?::date + '1 day'::interval)
+      GROUP BY date(time) LIMIT ?`,
+      [from, to, 32]
+    )
+
+    res.json({'res': ret.rows})
+
+  } catch (err) {
+    res.json({'res': [], 'error': err.toString()})
+  }
 
 })
