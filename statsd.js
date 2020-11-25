@@ -69,11 +69,11 @@ async function DB_init() {
   })
 }
 
-async function DB_push_query(query) {
+async function DB_insert_query(query) {
   const ret = await knex('query').insert({
     time: knex.fn.now(),
-    ip: query['ip'] || '0.0.0.0',
-    page: query['page'] || 0
+    page: query['page'] || 0,
+    ip: query['ip'] || '0.0.0.0'
   })
   .returning('id')
 
@@ -86,6 +86,25 @@ async function DB_push_query(query) {
       qryID: ret[0]
     })
   }
+}
+
+async function DB_update_ip_info(query) {
+  const geo = query.geo || {}
+  const city = geo['city'] || 'Unknown'
+  const region = geo['region'] || 'Unknown'
+  const country = geo['country'] || 'Unknown'
+  const insert_stmt = knex('ip_info').insert({
+    city: city,
+    region: region,
+    country: country,
+    ip: query['ip'] || '0.0.0.0'
+  }).toString()
+
+  const escape_city = city.replaceAll("'", "''")
+  const escape_region = region.replaceAll("'", "''")
+  const escape_country = country.replaceAll("'", "''")
+  await knex.raw(`${insert_stmt} ON CONFLICT (ip) DO UPDATE SET
+    city='${escape_city}', region='${escape_region}', country='${escape_region}';`)
 }
 
 /* initialize everything */
@@ -112,7 +131,8 @@ app.get('/', function (req, res) {
 }).post('/push/query', async (req, res) => {
 	const query = req.body
 
-  DB_push_query(query)
+  DB_update_ip_info(query)
+  DB_insert_query(query)
   res.json({'res': 'succussful'})
 
 }).get('/pull/query-items/:max/:from.:to', (req, res) => {
