@@ -50,11 +50,16 @@ async function migrate_ip_info(limit) {
 
   for (const row of stmt.iterate()) {
     console.log(row)
-    await db_knex('ip_info').insert({
-      region: row.city + ', ' + row.region,
+    const region = row.city + ', ' + row.region
+    const insert_stmt = db_knex('ip_info').insert({
+      region: region,
       country: row.country,
       ip: row.ip || '0.0.0.0'
-    })
+    }).toString()
+
+    const escape_region = region.replaceAll("'", "''")
+    await db_knex.raw(`${insert_stmt} ON CONFLICT (ip)
+      DO UPDATE SET region='${escape_region}', country='${escape_region}';`)
   }
 }
 
