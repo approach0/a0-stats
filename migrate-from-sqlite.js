@@ -67,7 +67,7 @@ async function migrate_ip_info(limit) {
     const escape_region = region.replaceAll("'", "''")
     const escape_country = country.replaceAll("'", "''")
     await db_knex.raw(`${insert_stmt} ON CONFLICT (ip) DO UPDATE SET
-      city='${escape_city}', region='${escape_region}', country='${escape_region}';`)
+      city='${escape_city}', region='${escape_region}', country='${escape_country}';`)
   }
 }
 
