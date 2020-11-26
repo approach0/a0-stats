@@ -1,8 +1,10 @@
 const Knex = require('knex')
+const Xor = require('base64-xor')
 const express = require('express')
 const bodyParser = require('body-parser')
 
 const max_items = 120
+const IP_XOR_SECRET = process.env['IP_XOR_SECRET'] || 'iamforgetful'
 
 /* create httpd instance */
 app = express()
@@ -107,6 +109,29 @@ async function DB_update_ip_info(query) {
     city='${escape_city}', region='${escape_region}', country='${escape_region}';`)
 }
 
+/* simple IP mask and encryption */
+function mask_ip(ip) {
+  if (ip.trim() === '') return '?'
+  const masked = ip.split('.').slice(0,2).join('.')
+  return masked + '.*.*'
+}
+
+function encrypt_ip(ip) {
+  return Xor.encode(IP_XOR_SECRET, ip)
+}
+
+function decrypt_ip(ip) {
+  return Xor.decode(IP_XOR_SECRET, ip)
+}
+
+function row_mapper(row) {
+  row.ip = {
+    'encrypted': encrypt_ip(row.ip),
+    'masked': mask_ip(row.ip)
+  }
+  return row
+}
+
 /* initialize everything */
 ;(async function() {
   console.log('Ensure DB table exists ...')
@@ -151,7 +176,7 @@ app.get('/', function (req, res) {
       [from, to, max]
     )
 
-    res.json({'res': ret.rows})
+    res.json({ 'res': ret.rows.map(row_mapper) })
 
   } catch (err) {
     res.json({'res': [], 'error': err.toString()})
@@ -160,7 +185,7 @@ app.get('/', function (req, res) {
 }).get('/pull/query-items/from-:ip/:max/:from.:to', async (req, res) => {
   try {
     const max = Math.min(max_items, req.params.max)
-    const ip = req.params.ip
+    const ip = decrypt_ip(req.params.ip)
     const from = req.params.from
     const to = req.params.to
     const ret = await knex.schema.raw(
@@ -175,7 +200,7 @@ app.get('/', function (req, res) {
       [from, to, ip, max]
     )
 
-    res.json({'res': ret.rows})
+    res.json({ 'res': ret.rows.map(row_mapper) })
 
   } catch (err) {
     res.json({'res': [], 'error': err.toString()})
@@ -184,7 +209,6 @@ app.get('/', function (req, res) {
 }).get('/pull/query-IPs/:max/:from.:to', async (req, res) => {
   try {
     const max = Math.min(max_items, req.params.max)
-    const ip = req.params.ip
     const from = req.params.from
     const to = req.params.to
     const ret = await knex.schema.raw(
@@ -197,7 +221,7 @@ app.get('/', function (req, res) {
       [from, to, max]
     )
 
-    res.json({'res': ret.rows})
+    res.json({ 'res': ret.rows.map(row_mapper) })
 
   } catch (err) {
     res.json({'res': [], 'error': err.toString()})
@@ -206,7 +230,7 @@ app.get('/', function (req, res) {
 }).get('/pull/query-IPs/from-:ip/:max/:from.:to', async (req, res) => {
   try {
     const max = Math.min(max_items, req.params.max)
-    const ip = req.params.ip
+    const ip = decrypt_ip(req.params.ip)
     const from = req.params.from
     const to = req.params.to
     const ret = await knex.schema.raw(
@@ -219,7 +243,7 @@ app.get('/', function (req, res) {
       [from, to, ip, max]
     )
 
-    res.json({'res': ret.rows})
+    res.json({ 'res': ret.rows.map(row_mapper) })
 
   } catch (err) {
     res.json({'res': [], 'error': err.toString()})
