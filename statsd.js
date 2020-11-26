@@ -45,7 +45,7 @@ async function DB_init_tables() {
     table.datetime('time').notNullable()
     table.string('ip').notNullable()
     table.integer('page').notNullable()
-    table.integer('id').primary().notNullable()
+    table.increments('id').primary()
     table.index('ip')
   })
 
