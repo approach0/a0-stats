@@ -150,13 +150,27 @@ app.get('/', function (req, res) {
 	})
 	res.json({'res': arr})
 
-}).get('/pull/query-IPs/:max/:from.:to', (req, res) => {
-	const max = Math.min(max_items, req.params.max)
-	const arr = qrylog.pull_query_IPs(db, max, {
-		begin: req.params.from,
-		end: req.params.to
-	})
-	res.json({'res': arr})
+}).get('/pull/query-IPs/:max/:from.:to', async (req, res) => {
+  try {
+    const max = Math.min(max_items, req.params.max)
+    const ip = req.params.ip
+    const from = req.params.from
+    const to = req.params.to
+    const ret = await knex.schema.raw(
+      `SELECT max(time) as time, query.ip as ip, COUNT(*) as counter,
+        max(ip_info.city) as city, max(ip_info.region) as region, max(ip_info.country) as country
+        FROM query
+      JOIN ip_info ON query.ip = ip_info.ip
+      WHERE time >= ?::date AND time < (?::date + '1 day'::interval)
+      GROUP BY query.ip ORDER BY counter DESC LIMIT ?`,
+      [from, to, max]
+    )
+
+    res.json({'res': ret.rows})
+
+  } catch (err) {
+    res.json({'res': [], 'error': err.toString()})
+  }
 
 }).get('/pull/query-IPs/from-:ip/:max/:from.:to', async (req, res) => {
   try {
@@ -169,7 +183,7 @@ app.get('/', function (req, res) {
         max(ip_info.city) as city, max(ip_info.region) as region, max(ip_info.country) as country
         FROM query
       JOIN ip_info ON query.ip = ip_info.ip
-      WHERE (time >= ?::date AND time < (?::date + '1 day'::interval) AND query.ip = ?)
+      WHERE time >= ?::date AND time < (?::date + '1 day'::interval) AND query.ip = ?
       GROUP BY query.ip ORDER BY counter DESC LIMIT ?`,
       [from, to, ip, max]
     )
