@@ -268,15 +268,14 @@ export default {
     },
     search(index) {
       var item = this.results[index];
-      const prefix = 'https://approach0.xyz/search/?q=';
+      const prefix = '/search/?q=';
       var uri = '';
       for (var i = 0; i < item.kw.length; i++) {
         const kw   = item.kw[i];
-        const type = item.type[i];
-        if (type == 'tex')
-          uri += `$${kw}$`;
+        if (kw.type == 'tex')
+          uri += `$${kw.str}$`;
         else
-          uri += `${kw}`;
+          uri += `${kw.str}`;
         if (i + 1 < item.kw.length)
           uri += ', ';
       }
@@ -332,7 +331,7 @@ export default {
   data: function () {
     return {
       form_valid: false,
-      last_index_update: '2020-11-25T19:16:00',
+      last_index_update: '2020-11-01T19:00:00',
       from: '2020-11-24',
       to: new Date().toISOString().substr(0, 10),
       max: 30,
