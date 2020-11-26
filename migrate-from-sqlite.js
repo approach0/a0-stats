@@ -19,7 +19,6 @@ async function migrate_query(limit) {
     table.string('ip').notNullable()
     table.integer('page').notNullable()
     table.increments('id').primary()
-    table.index('ip')
   })
 
   const limit_clause = (limit < 0) ? '' : ` limit ${limit || 0}`

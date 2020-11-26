@@ -46,10 +46,10 @@ async function DB_init_tables() {
     table.string('ip').notNullable()
     table.integer('page').notNullable()
     table.increments('id').primary()
-    table.index('ip')
   })
 
   await createTable('ip_info', function(table) {
+    table.string('city').notNullable()
     table.string('region').notNullable()
     table.string('country').notNullable()
     table.string('ip').notNullable()
