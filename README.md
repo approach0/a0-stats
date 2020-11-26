@@ -6,7 +6,9 @@ To setup:
 ```
 $ npm install
 $ npm run build
+
 $ export IP_XOR_SECRET=iamforgetful
+$ export PG_HOST=localhost
 $ node statsd.js
 ```
 

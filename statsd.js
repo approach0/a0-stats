@@ -3,19 +3,20 @@ const Xor = require('base64-xor')
 const express = require('express')
 const bodyParser = require('body-parser')
 
-const max_items = 120
 const IP_XOR_SECRET = process.env['IP_XOR_SECRET'] || 'iamforgetful'
+const PG_HOST = process.env['PG_HOST'] || '127.0.0.1'
+
+const max_items = 120
 
 /* create httpd instance */
 app = express()
 
 /* connect to database */
-const host = '127.0.0.1'
-console.log(`To connect database at ${host}`)
+console.log(`To connect database at ${PG_HOST}`)
 const knex = Knex({
   client: 'pg',
   connection: {
-    host: host,
+    host: PG_HOST,
     user: 'postgres',
     password: 'postgres',
     database: 'postgres'
