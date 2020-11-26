@@ -189,14 +189,13 @@ export default {
       return str;
     },
     ajax(url, on_success) {
-      if (url.includes('summary'))
-        on_success(mock.summary)
-      else if (url.includes('trend'))
-        on_success(mock.trend)
-      else
-        on_success(mock.items)
-
-      return
+//      if (url.includes('summary'))
+//        on_success(mock.summary)
+//      else if (url.includes('trend'))
+//        on_success(mock.trend)
+//      else
+//        on_success(mock.items)
+//      return
 
       $.ajax({
         url: url,
