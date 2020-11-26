@@ -43,7 +43,7 @@ async function createTable(name, schema) {
   }
 }
 
-async function DB_init() {
+async function DB_init_tables() {
 
   await createTable('query', function(table) {
     table.datetime('time').notNullable()
@@ -110,7 +110,7 @@ async function DB_update_ip_info(query) {
 /* initialize everything */
 ;(async function() {
   console.log('Ensure DB table exists ...')
-  await DB_init()
+  await DB_init_tables()
 
   const port = 3207
   console.log('listening on ' + port)
@@ -134,21 +134,52 @@ app.get('/', function (req, res) {
   DB_insert_query(query)
   res.json({'res': 'succussful'})
 
-}).get('/pull/query-items/:max/:from.:to', (req, res) => {
-	const max = Math.min(max_items, req.params.max)
-	const arr = qrylog.pull_query_items(db, max, {
-		begin: req.params.from,
-		end: req.params.to
-	})
-	res.json({'res': arr})
+}).get('/pull/query-items/:max/:from.:to', async (req, res) => {
+  try {
+    const max = Math.min(max_items, req.params.max)
+    const from = req.params.from
+    const to = req.params.to
+    const ret = await knex.schema.raw(
+      `SELECT query.id as id, query.time as time, query.ip as ip, query.page as page,
+        max(ip_info.city) as city, max(ip_info.region) as region, max(ip_info.country) as country,
+        json_agg(json_build_object('str', keyword.str, 'type', keyword.type)) as kw
+        FROM query
+      JOIN keyword ON query.id = keyword."qryID"
+      JOIN ip_info ON query.ip = ip_info.ip
+      WHERE time >= ?::date AND time < (?::date + '1 day'::interval)
+      GROUP BY id ORDER BY id DESC LIMIT ?`,
+      [from, to, max]
+    )
 
-}).get('/pull/query-items/from-:ip/:max/:from.:to', (req, res) => {
-	const max = Math.min(max_items, req.params.max)
-	const arr = qrylog.pull_query_items_of(db, req.params.ip, max, {
-		begin: req.params.from,
-		end: req.params.to
-	})
-	res.json({'res': arr})
+    res.json({'res': ret.rows})
+
+  } catch (err) {
+    res.json({'res': [], 'error': err.toString()})
+  }
+
+}).get('/pull/query-items/from-:ip/:max/:from.:to', async (req, res) => {
+  try {
+    const max = Math.min(max_items, req.params.max)
+    const ip = req.params.ip
+    const from = req.params.from
+    const to = req.params.to
+    const ret = await knex.schema.raw(
+      `SELECT query.id as id, query.time as time, query.ip as ip, query.page as page,
+        max(ip_info.city) as city, max(ip_info.region) as region, max(ip_info.country) as country,
+        json_agg(json_build_object('str', keyword.str, 'type', keyword.type)) as kw
+        FROM query
+      JOIN keyword ON query.id = keyword."qryID"
+      JOIN ip_info ON query.ip = ip_info.ip
+      WHERE time >= ?::date AND time < (?::date + '1 day'::interval) AND query.ip = ?
+      GROUP BY id ORDER BY id DESC LIMIT ?`,
+      [from, to, ip, max]
+    )
+
+    res.json({'res': ret.rows})
+
+  } catch (err) {
+    res.json({'res': [], 'error': err.toString()})
+  }
 
 }).get('/pull/query-IPs/:max/:from.:to', async (req, res) => {
   try {
