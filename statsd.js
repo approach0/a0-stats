@@ -85,7 +85,7 @@ async function DB_insert_query(query) {
 }
 
 async function DB_update_ip_info(query) {
-  const geo = query.geo || {}
+  const geo = query['geo'] || {}
   const city = geo['city'] || 'Unknown'
   const region = geo['region'] || 'Unknown'
   const country = geo['country'] || 'Unknown'
@@ -96,11 +96,9 @@ async function DB_update_ip_info(query) {
     ip: query['ip'] || '0.0.0.0'
   }).toString()
 
-  const escape_city = city.replaceAll("'", "''")
-  const escape_region = region.replaceAll("'", "''")
-  const escape_country = country.replaceAll("'", "''")
-  await knex.raw(`${insert_stmt} ON CONFLICT (ip) DO UPDATE SET
-    city='${escape_city}', region='${escape_region}', country='${escape_region}';`)
+  await knex.raw(`${insert_stmt} ON CONFLICT (ip) DO UPDATE SET city=?, region=?, country=?;`,
+    [city, region, country]
+  )
 }
 
 /* simple IP mask and encryption */
@@ -158,8 +156,8 @@ app.post('/push/query', async (req, res) => {
     const query = req.body
     console.log(query)
 
-    DB_update_ip_info(query)
     DB_insert_query(query)
+    DB_update_ip_info(query)
     res.json({'res': 'succussful'})
 
   } catch (err) {
