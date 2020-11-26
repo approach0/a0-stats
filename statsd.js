@@ -10,6 +10,7 @@ const max_items = 120
 
 /* create httpd instance */
 app = express()
+app.use(bodyParser.json())
 
 /* connect to database */
 console.log(`To connect database at ${PG_HOST}`)
@@ -130,7 +131,6 @@ function row_mapper(row) {
   console.log('Ensure DB table exists ...')
   await DB_init_tables()
 
-  app.use(bodyParser.json())
   app.use('/', express.static('./dist'))
 
   /* disable etag (hash) and cache-control policy */
@@ -154,10 +154,17 @@ function row_mapper(row) {
 
 /* httpd routers */
 app.post('/push/query', async (req, res) => {
-  const query = req.body
-  DB_update_ip_info(query)
-  DB_insert_query(query)
-  res.json({'res': 'succussful'})
+  try {
+    const query = req.body
+    console.log(query)
+
+    DB_update_ip_info(query)
+    DB_insert_query(query)
+    res.json({'res': 'succussful'})
+
+  } catch (err) {
+    res.json({'res': [], 'error': err.toString()})
+  }
 
 }).get('/pull/query-items/:max/:from.:to', async (req, res) => {
   try {
