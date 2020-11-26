@@ -8,14 +8,6 @@ const IP_XOR_SECRET = process.env['IP_XOR_SECRET'] || 'iamforgetful'
 
 /* create httpd instance */
 app = express()
-app.use(bodyParser.json())
-
-/* disable etag (hash) and cache-control policy */
-app.disable('etag')
-app.use((req, res, next) => {
-  res.set('Cache-Control', 'no-cache')
-  next()
-})
 
 /* connect to database */
 const host = '127.0.0.1'
@@ -137,6 +129,16 @@ function row_mapper(row) {
   console.log('Ensure DB table exists ...')
   await DB_init_tables()
 
+  app.use(bodyParser.json())
+  app.use('/', express.static('./dist'))
+
+  /* disable etag (hash) and cache-control policy */
+  app.disable('etag')
+  app.use((req, res, next) => {
+    res.set('Cache-Control', 'no-cache')
+    next()
+  })
+
   const port = 3207
   console.log('listening on ' + port)
   app.listen(port)
@@ -150,10 +152,7 @@ function row_mapper(row) {
 })()
 
 /* httpd routers */
-app.get('/', function (req, res) {
-  res.send('This is statsd!')
-
-}).post('/push/query', async (req, res) => {
+app.post('/push/query', async (req, res) => {
   const query = req.body
   DB_update_ip_info(query)
   DB_insert_query(query)

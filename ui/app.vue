@@ -77,6 +77,7 @@
       <v-timeline-item class="mb-3" color="grey" fill-dot small
         v-for="(item, i) in results"
         v-bind:key="item.ip['encrypted'] + item.time">
+
         <v-layout justify-space-between wrap>
           <v-flex xs6>
             <b>IP: </b>
@@ -92,16 +93,18 @@
             {{show_time(item.time, true)}}
           </v-flex>
         </v-layout>
+
         <div v-if="showQueries">
           <v-flex v-for="(kw, j) in item.kw" v-bind:key="j">
             <v-chip class="limitw">
-              {{show_keyword(kw, item.type[j])}}
+              {{show_keyword(kw.str, kw.type)}}
             </v-chip>
           </v-flex>
           <v-flex md4>
             <v-btn flat round @click="search(i)">search again</v-btn>
           </v-flex>
         </div>
+
       </v-timeline-item>
     </v-timeline>
 
@@ -114,7 +117,8 @@
 
 <v-footer dark height="auto">
   <v-card class="flex" flat tile>
-    &nbsp; Last update of index: {{show_time(last_index_update, true)}}.
+    &nbsp;
+    <!-- Last update of index: {{show_time(last_index_update, true)}}. -->
     <v-divider></v-divider>
     <v-card-actions class="grey py-3 justify-center">
       <strong>Approach0</strong> &nbsp; {{new Date().getFullYear()}}
@@ -130,6 +134,8 @@ import $ from 'jquery' /* AJAX request lib */
 var urlpar = require('url');
 var Base64 = require('Base64');
 var moment = require('moment');
+
+const mock = require('./mock.js')
 
 export default {
   watch: {
@@ -182,42 +188,51 @@ export default {
         str = str + sep;
       return str;
     },
-    refresh() {
-      var vm = this;
+    ajax(url, on_success) {
+      if (url.includes('summary'))
+        on_success(mock.summary)
+      else if (url.includes('trend'))
+        on_success(mock.trend)
+      else
+        on_success(mock.items)
+
+      return
+
       $.ajax({
-        url: `/stats-api/pull/query-summary/${vm.from}.${vm.to}/`,
+        url: url,
         type: 'GET',
         success: (data) => {
-          const summary = data['res'][0];
-          //console.log(summary);
-          vm.n_uniq_ip = summary['n_uniq_ip'];
-          vm.n_queries = summary['n_queries'];
+          on_success(data)
         },
         error: (req, err) => {
-          console.log(err);
+          console.error(err.toString());
         }
       });
+    },
+    refresh() {
+      var vm = this;
+
+      vm.ajax(`pull/query-summary/${vm.from}.${vm.to}/`, (data) => {
+        const summary = data['res'][0];
+        vm.n_uniq_ip = summary['n_uniq_ip'];
+        vm.n_queries = summary['n_queries'];
+      });
+
+      this.get_trend();
+
       const api_uri = vm.api_compose(
         vm.from, vm.to, vm.max, vm.url_ip, vm.showQueries
       );
-      $.ajax({
-        url: '/stats-api/pull/' + api_uri,
-        type: 'GET',
-        success: (data) => {
-          // console.log(data); /* print */
-          vm.results = data['res'];
-          for (var i = 0; i < vm.results.length; i++) {
-            var item = vm.results[i];
-            const loc = this.subname(item.city, ', ') +
-            this.subname(item.region, ', ') + this.subname(item.country, '.');
-            vm.$set(vm.results[i], 'location',  (loc == '') ? 'Unknown' : loc);
-          }
-        },
-        error: (req, err) => {
-          console.log(err);
+      vm.ajax('pull/' + api_uri, (data) => {
+        const results = data['res']
+        vm.results = results;
+        for (var i = 0; i < results.length; i++) {
+          var item = results[i];
+          const loc = this.subname(item.city, ', ') +
+          this.subname(item.region, ', ') + this.subname(item.country, '.');
+          vm.$set(vm.results[i], 'location',  (loc == '') ? 'Unknown' : loc);
         }
       });
-      this.get_trend();
     },
     trend_h(val, height) {
       const trend = this.trend_value;
@@ -289,28 +304,21 @@ export default {
       const from = m.format("YYYY-MM-DD");
       const to = this.to;
 
-      $.ajax({
-        url: `/stats-api/pull/query-trend/${from}.${to}/`,
-        type: 'GET',
-        success: (data) => {
-          const trend = data['res'];
-          const map = trend.reduce((o, cur) => ({
-            ...o,
-            [cur['date']]: cur['n_uniq_ip']
-          }), {});
+      vm.ajax(`pull/query-trend/${from}.${to}/`, (data) => {
+        const trend = data['res'];
+        const map = trend.reduce((o, cur) => ({
+          ...o,
+          [cur['date'].split('T')[0]]: cur['n_uniq_ip']
+        }), {});
 
-          for (var i = 0; i <= tot; i ++) {
-            const m = moment(to).subtract(tot - i, 'days');
-            const day = m.format("YYYY-MM-DD");
-            this.trend_label.push(day);
-            this.trend_value.push(map[day] || 0);
-          }
-          // console.log(this.trend_label);
-          // console.log(this.trend_value);
-        },
-        error: (req, err) => {
-          console.log(err);
+        for (var i = 0; i <= tot; i ++) {
+          const m = moment(to).subtract(tot - i, 'days');
+          const day = m.format("YYYY-MM-DD");
+          this.trend_label.push(day);
+          this.trend_value.push(map[day] || 0);
         }
+//        console.log('trend label', this.trend_label);
+//        console.log('trend value', this.trend_value);
       });
     },
     uri_IP() {
@@ -334,7 +342,7 @@ export default {
       n_uniq_ip: 0,
       n_queries: 0,
       timeRules: [
-        v => /\d{4}-\d{2}-\d{2}/.test(v) || 'Invalid time format'
+        v => /\d{4}-\d{2}-\d{2}/.test(v)
       ],
       numberRules: [
         v => /^\d+$/.test(v) || 'Invalid number'
