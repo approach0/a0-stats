@@ -180,7 +180,7 @@ app.post('/push/query', async (req, res) => {
         FROM query
       JOIN keyword ON query.id = keyword."qryID"
       JOIN ip_info ON query.ip = ip_info.ip
-      WHERE time >= ?::date AND time < (?::date + '1 day'::interval)
+      WHERE time >= (?::date + '1 day'::interval) AND time < (?::date + '2 day'::interval)
       GROUP BY id ORDER BY id DESC LIMIT ?`,
       [from, to, max]
     )
@@ -204,7 +204,8 @@ app.post('/push/query', async (req, res) => {
         FROM query
       JOIN keyword ON query.id = keyword."qryID"
       JOIN ip_info ON query.ip = ip_info.ip
-      WHERE time >= ?::date AND time < (?::date + '1 day'::interval) AND query.ip = ?
+      WHERE time >= (?::date + '1 day'::interval) AND time < (?::date + '2 day'::interval)
+	  AND query.ip = ?
       GROUP BY id ORDER BY id DESC LIMIT ?`,
       [from, to, ip, max]
     )
@@ -225,7 +226,7 @@ app.post('/push/query', async (req, res) => {
         max(ip_info.city) as city, max(ip_info.region) as region, max(ip_info.country) as country
         FROM query
       JOIN ip_info ON query.ip = ip_info.ip
-      WHERE time >= ?::date AND time < (?::date + '1 day'::interval)
+      WHERE time >= (?::date + '1 day'::interval) AND time < (?::date + '2 day'::interval)
       GROUP BY query.ip ORDER BY counter DESC LIMIT ?`,
       [from, to, max]
     )
@@ -247,7 +248,8 @@ app.post('/push/query', async (req, res) => {
         max(ip_info.city) as city, max(ip_info.region) as region, max(ip_info.country) as country
         FROM query
       JOIN ip_info ON query.ip = ip_info.ip
-      WHERE time >= ?::date AND time < (?::date + '1 day'::interval) AND query.ip = ?
+      WHERE time >= (?::date + '1 day'::interval) AND time < (?::date + '2 day'::interval)
+      AND query.ip = ?
       GROUP BY query.ip ORDER BY counter DESC LIMIT ?`,
       [from, to, ip, max]
     )
@@ -264,7 +266,7 @@ app.post('/push/query', async (req, res) => {
     const to = req.params.to
     const ret = await knex.schema.raw(
       `SELECT COUNT(*) as n_queries, COUNT(DISTINCT IP) as n_uniq_ip FROM query
-      WHERE time >= ?::date AND time < (?::date + '1 day'::interval)`,
+      WHERE time >= (?::date + '1 day'::interval) AND time < (?::date + '2 day'::interval)`,
       [from, to]
     )
 
@@ -280,9 +282,9 @@ app.post('/push/query', async (req, res) => {
     const to = req.params.to
     const ret = await knex.schema.raw(
       `SELECT COUNT(DISTINCT ip) as n_uniq_ip, date(time) as date FROM query
-      WHERE time >= ?::date AND time < (?::date + '1 day'::interval)
+      WHERE time >= (?::date + '1 day'::interval) AND time < (?::date + '2 day'::interval)
       GROUP BY date(time) LIMIT ?`,
-      [from, to, 32]
+      [from, to, 32 /* UI defined trend_days */]
     )
 
     res.json({'res': ret.rows})

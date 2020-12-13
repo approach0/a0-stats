@@ -47,7 +47,7 @@
 </v-form>
 
 <div class="pa-5" v-if="results.length != 0" style="text-align: center;">
-  <p>Unique IPs of past {{trend_days}} days (back from {{show_time(to, false)}}):</p>
+  <p>Unique IPs from past {{trend_days}} days (back from {{show_time(to, false)}})</p>
   <v-layout align-center justify-center>
     <div style="overflow-x: auto">
     <svg class="chart"
@@ -298,10 +298,9 @@ export default {
       this.trend_label = [];
       this.trend_value = [];
       const tot = this.trend_days;
-      const m = moment(this.to).subtract(tot, 'days');
+      const m = moment(this.to).subtract(tot - 1, 'days');
       const from = m.format("YYYY-MM-DD");
       const to = this.to;
-
       vm.ajax(`pull/query-trend/${from}.${to}/`, (data) => {
         const trend = data['res'];
         const map = trend.reduce((o, cur) => ({
@@ -309,7 +308,7 @@ export default {
           [cur['date'].split('T')[0]]: cur['n_uniq_ip']
         }), {});
 
-        for (var i = 0; i <= tot; i ++) {
+        for (var i = 1; i <= tot; i ++) {
           const m = moment(to).subtract(tot - i, 'days');
           const day = m.format("YYYY-MM-DD");
           this.trend_label.push(day);
