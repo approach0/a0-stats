@@ -130,7 +130,8 @@
 </template>
 
 <script>
-import $ from 'jquery' /* AJAX request lib */
+const TeX_render = require('./tex-render.js')
+
 var urlpar = require('url');
 var Base64 = require('Base64');
 var moment = require('moment');
@@ -249,7 +250,7 @@ export default {
     },
     show_keyword(kw, type) {
       if (type == 'tex')
-        return `$$ ${kw} $$`;
+        return `[imath] ${kw} [/imath]`;
       else
         return `${kw}`;
     },
@@ -282,16 +283,9 @@ export default {
       window.open(prefix + encodeURIComponent(uri), '_blank');
     },
     render() {
-      $('.limitw span').each(function() {
-        var ele = $(this).get(0);
-        var prefix = $(this).html().trim().slice(0, 1);
-        if (prefix == '$') {
-          // console.log($(this).html());
-          MathJax.Hub.Queue(
-            ["Typeset", MathJax.Hub, ele]
-          );
-        }
-      });
+      TeX_render.render('.limitw span', (a, b) => {
+        //console.log(a, b)
+      })
     },
     get_trend() {
       var vm = this;
