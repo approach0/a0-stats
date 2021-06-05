@@ -121,7 +121,7 @@
     <!-- Last update of index: {{show_time(last_index_update, true)}}. -->
     <v-divider></v-divider>
     <v-card-actions class="grey py-3 justify-center">
-      <strong>Approach0</strong> &nbsp; {{new Date().getFullYear()}}
+      <strong>Approach Zero</strong> &nbsp; {{new Date().getFullYear()}}
     </v-card-actions>
   </v-card>
 </v-footer>
