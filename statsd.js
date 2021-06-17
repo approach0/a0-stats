@@ -67,6 +67,16 @@ async function DB_init_tables() {
     table.integer('qryID').notNullable()
     table.index('qryID')
   })
+
+  await createTable('clickthrough', function(table) {
+    table.string('qry').notNullable()
+    table.string('ip').notNullable()
+    table.string('url').notNullable()
+    table.integer('rank').notNullable()
+    table.integer('click').notNullable()
+    table.integer('page').notNullable()
+    table.datetime('time').notNullable()
+  })
 }
 
 async function DB_insert_query(query) {
@@ -86,6 +96,22 @@ async function DB_insert_query(query) {
       qryID: ret[0]
     })
   }
+}
+
+async function DB_add_clicks(ct) {
+  const qry = ct.qry
+  const ip = ct.ip
+  const time = new Date()
+  const clicks = ct.clicks
+  const promises = []
+  for (let i = 0; i < clicks.length; i++) {
+    [rank, page, url, click] = clicks[i]
+    promises.push(knex('clickthrough').insert({
+      qry, ip, rank, page, url, click, time
+    }))
+  }
+
+  return Promise.all(promises)
 }
 
 async function DB_update_ip_info(query) {
@@ -168,6 +194,18 @@ app.post('/push/query', async (req, res) => {
     res.json({'res': [], 'error': err.toString()})
   }
 
+}).post('/push/clicks', async (req, res) => {
+  try {
+    const clickthro = req.body
+    console.log(clickthro)
+
+    DB_add_clicks(clickthro)
+    res.json({'res': 'succussful'})
+
+  } catch (err) {
+    res.json({'res': [], 'error': err.toString()})
+  }
+
 }).get('/pull/query-items/:max/:from.:to', async (req, res) => {
   try {
     const max = Math.min(max_items, req.params.max)
@@ -205,7 +243,7 @@ app.post('/push/query', async (req, res) => {
       JOIN keyword ON query.id = keyword."qryID"
       JOIN ip_info ON query.ip = ip_info.ip
       WHERE time >= (?::date + '1 day'::interval) AND time < (?::date + '2 day'::interval)
-	  AND query.ip = ?
+      AND query.ip = ?
       GROUP BY id ORDER BY id DESC LIMIT ?`,
       [from, to, ip, max]
     )
