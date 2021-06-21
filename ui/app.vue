@@ -279,9 +279,9 @@ export default {
       for (var i = 0; i < item.kw.length; i++) {
         const kw   = item.kw[i];
         if (kw.type == 'tex')
-          uri += `$${kw.str}$`;
+          uri += `${kw.op} ${kw.field}:$${kw.str}$`;
         else
-          uri += `${kw.str}`;
+          uri += `${kw.op} ${kw.field}:${kw.str}`;
         if (i + 1 < item.kw.length)
           uri += ', ';
       }
