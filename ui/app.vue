@@ -97,7 +97,7 @@
         <div v-if="showQueries">
           <v-flex v-for="(kw, j) in item.kw" v-bind:key="j">
             <v-chip class="limitw">
-              {{show_keyword(kw.str, kw.type)}}
+              {{show_keyword(kw)}}
             </v-chip>
           </v-flex>
           <v-flex md4>
@@ -248,11 +248,16 @@ export default {
     clear_ip_filter() {
       this.url_ip = null;
     },
-    show_keyword(kw, type) {
-      if (type == 'tex')
-        return `[imath] ${kw} [/imath]`;
+    show_keyword(kw) {
+      let prepend = (kw.op === 'OR') ? '' : `${kw.op} `
+
+      if (kw.field !== 'content')
+        prepend += `${kw.field}:`
+
+      if (kw.type === 'tex')
+        return prepend + `[imath] ${kw.str} [/imath]`;
       else
-        return `${kw}`;
+        return prepend + `${kw.str}`;
     },
     show_time(time, detail) {
       if (true != this.timeRules[0](time))

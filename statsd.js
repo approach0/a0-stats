@@ -63,7 +63,8 @@ async function DB_init_tables() {
   await createTable('keyword', function(table) {
     table.string('str', 511).notNullable()
     table.string('type').notNullable()
-    table.string('op')
+    table.string('op', 4).notNullable()
+    table.string('field', 128).notNullable()
     table.integer('qryID').notNullable()
     table.index('qryID')
   })
