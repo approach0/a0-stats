@@ -92,7 +92,8 @@ async function DB_insert_query(query) {
     await knex('keyword').insert({
       str: kw['str'] || '',
       type: kw['type'] || 'word',
-      op: null,
+      op: kw['op'] || 'OR',
+      field: kw['field'] || 'content',
       qryID: ret[0]
     })
   }
