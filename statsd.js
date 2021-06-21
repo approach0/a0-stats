@@ -216,8 +216,13 @@ app.post('/push/query', async (req, res) => {
     const ret = await knex.schema.raw(
       `SELECT query.id as id, query.time as time, query.ip as ip, query.page as page,
         max(ip_info.city) as city, max(ip_info.region) as region, max(ip_info.country) as country,
-        json_agg(json_build_object('str', keyword.str, 'type', keyword.type)) as kw
-        FROM query
+        json_agg(json_build_object(
+			'op', keyword.op,
+			'field', keyword.field,
+			'str', keyword.str,
+			'type', keyword.type
+		)) as kw
+		FROM query
       JOIN keyword ON query.id = keyword."qryID"
       JOIN ip_info ON query.ip = ip_info.ip
       WHERE time >= (?::date + '1 day'::interval) AND time < (?::date + '2 day'::interval)
@@ -240,8 +245,13 @@ app.post('/push/query', async (req, res) => {
     const ret = await knex.schema.raw(
       `SELECT query.id as id, query.time as time, query.ip as ip, query.page as page,
         max(ip_info.city) as city, max(ip_info.region) as region, max(ip_info.country) as country,
-        json_agg(json_build_object('str', keyword.str, 'type', keyword.type)) as kw
-        FROM query
+        json_agg(json_build_object(
+			'op', keyword.op,
+			'field', keyword.field,
+			'str', keyword.str,
+			'type', keyword.type
+		)) as kw
+		FROM query
       JOIN keyword ON query.id = keyword."qryID"
       JOIN ip_info ON query.ip = ip_info.ip
       WHERE time >= (?::date + '1 day'::interval) AND time < (?::date + '2 day'::interval)
